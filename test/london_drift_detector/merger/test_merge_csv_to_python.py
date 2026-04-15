@@ -43,5 +43,7 @@ def test_read_directory_then_csv_and_save_as_parquest_in_folder(tmp_path):
     assert output_path.exists(), f"Expected output parquet file at {output_path} does not exist."
     assert output_path.is_dir(), f"Expected output path to be a directory, got {output_path.is_dir()}."
     assert len(list(output_path.iterdir())) == 1, f"Expected 1 parquet file in output path, got {len(list(output_path.iterdir()))}."
-    # assert output_path.name == "results", f"Expected output path to be 2024-03-10.parquet, got {output_path.name}."
-    # assert output_path.name == "2024-03-10.parquet", f"Expected output path to be 2024-03-10.parquet, got {output_path.name}."
+
+    # Check if a file with name '2024-03-10.parquet' exists in output_path
+    expected_file = output_path / "2024-03-10.parquet"
+    assert expected_file.exists(), f"Expected output file {expected_file} does not exist."
