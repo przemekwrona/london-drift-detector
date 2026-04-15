@@ -1,74 +1,66 @@
-import argparse
 import sys
 from pathlib import Path
+import argparse
 from london_drift_detector.merger import file_merger as prqt
 
 
-def merge_csvs_to_parquet_cmd(args):
-    try:
-        prqt.merge_csvs_to_parquet(
-            directory=Path(args.directory),
-            output_path=Path(args.output)
-        )
-    except Exception as e:
-        print(f"Error during merging CSVs to parquet: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-def merge_csvs_in_directories_to_parquet_cmd(args):
-    try:
-        prqt.merge_csvs_in_directories_to_parquest(
-            directory=Path(args.directory),
-            output_path=Path(args.output)
-        )
-    except Exception as e:
-        print(f"Error during merging CSV directories to parquet: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
 def main():
-    parser = argparse.ArgumentParser(
-        description="Merge CSV files into Parquet (single or batch mode)."
-    )
-    subparsers = parser.add_subparsers(
-        dest='command',
-        required=True,
-        help='Commands'
-    )
+    """
+    An example script for Poetry entry points.
 
-    # Single merge parser
-    single = subparsers.add_parser(
+    Usage:
+        poetry run merge-csvs single --directory <input_dir> --output <output_file>
+        poetry run merge-csvs batch --directory <parent_dir> --output <output_dir>
+    """
+
+    parser = argparse.ArgumentParser(description="Merge CSV files into Parquet (single directory or batch mode).")
+    subparsers = parser.add_subparsers(dest='command', required=True)
+
+    # Single file
+    single_parser = subparsers.add_parser(
         'single',
-        help='Merge all CSV files in a directory into a single Parquet file.'
+        help='Merge all CSVs in a directory into a single Parquet file.'
     )
-    single.add_argument(
-        '--directory', '-d', type=str, required=True,
-        help='Directory containing the CSV files.'
+    single_parser.add_argument(
+        '--directory', '-d', required=True, type=str,
+        help="Directory containing CSV files."
     )
-    single.add_argument(
-        '--output', '-o', type=str, required=True,
-        help='Path for output Parquet file.'
+    single_parser.add_argument(
+        '--output', '-o', required=True, type=str,
+        help="Output Parquet file path."
     )
-    single.set_defaults(func=merge_csvs_to_parquet_cmd)
 
-    # Batch merge parser
-    batch = subparsers.add_parser(
+    # Batch mode
+    batch_parser = subparsers.add_parser(
         'batch',
-        help='Merge CSVs in each subdirectory, outputting one Parquet per subdirectory.'
+        help='Merge all CSVs in each subdirectory, outputting one Parquet per subdirectory.'
     )
-    batch.add_argument(
-        '--directory', '-d', type=str, required=True,
-        help='Parent directory containing subdirectories with CSVs.'
+    batch_parser.add_argument(
+        '--directory', '-d', required=True, type=str,
+        help="Parent directory containing subdirectories with CSVs."
     )
-    batch.add_argument(
-        '--output', '-o', type=str, required=True,
-        help='Output directory for Parquet files.'
+    batch_parser.add_argument(
+        '--output', '-o', required=True, type=str,
+        help="Output directory for Parquet files."
     )
-    batch.set_defaults(func=merge_csvs_in_directories_to_parquet_cmd)
 
     args = parser.parse_args()
-    args.func(args)
+
+    try:
+        if args.command == 'single':
+            prqt.merge_csvs_to_parquet(
+                directory=Path(args.directory),
+                output_path=Path(args.output)
+            )
+        elif args.command == 'batch':
+            prqt.merge_csvs_in_directories_to_parquest(
+                directory=Path(args.directory),
+                output_path=Path(args.output)
+            )
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
