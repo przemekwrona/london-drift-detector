@@ -87,3 +87,16 @@ def merge_csvs_to_parquet(directory: Path, output_path: Path):
     merged_df = pd.concat(dfs, ignore_index=True)
     merged_df.to_parquet(output_path, index=False)
     print(f"Merged {len(csv_files)} CSVs and saved to {output_path}")
+
+
+def merge_csvs_in_directories_to_parquest(directory: Path, output_path: Path):
+    if not output_path.exists():
+        output_path.mkdir(parents=True, exist_ok=True)
+
+    for subdirectory in directory.iterdir():
+        if subdirectory.is_dir():
+            subdirectory_name = subdirectory.name
+
+            parquet_output_path = output_path / f'{subdirectory_name}.parquet'
+
+            merge_csvs_to_parquet(subdirectory, parquet_output_path)
