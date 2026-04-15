@@ -2,7 +2,9 @@
 name = "london-drift-detector"
 version = "0.1.0"
 description = ""
-authors = ["Przemyslaw Wrona <przemekwrona25@gmail.com>"]
+authors = [
+    "Przemyslaw Wrona <przemekwrona25@gmail.com>"
+]
 readme = "README.md"
 
 [tool.poetry.dependencies]
