@@ -5,6 +5,7 @@ import pandas as pd
 def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parquet"):
     """
     Merges all .csv files in a given directory into a single DataFrame and saves as a parquet file.
+    When reading CSVs, explicitly sets column names and their types.
     
     Args:
         directory (Path): Directory containing .csv files.
@@ -28,9 +29,41 @@ def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parque
             f"No CSV-like files found in {directory} (expected *.csv or part-*)"
         )
 
+    # Define column names and types
+    columns = [
+        "city", "id", "route", "stop_id",
+        "curr_trip_id", "curr_stop_name", "curr_time", "curr_delay",
+        "prev_trip_id", "prev_stop_name", "prev_time", "prev_delay",
+        "diff", "orig_trip_id", "orig_stop_name"
+    ]
+    # Assign types. Change as needed based on actual expected types.
+    dtypes = {
+        "city": "string",
+        "trip_id": "string",
+        "line": "Int64",       # pandas nullable integer
+        "stop_id": "Int64",
+        "curr_trip_id": "string",
+        "curr_stop_name": "string",
+        "curr_time": "string",
+        "curr_delay": "Int64",
+        "prev_trip_id": "string",
+        "prev_stop_name": "string",
+        "prev_time": "string",
+        "prev_delay": "Int64",
+        "diff": "Int64",
+        "orig_trip_id": "string",
+        "orig_stop_name": "string"
+    }
+
     dfs = []
     for csv_file in csv_files:
-        df = pd.read_csv(csv_file, sep=';')
+        df = pd.read_csv(
+            csv_file,
+            sep=';',
+            header=None,
+            names=columns,
+            dtype=dtypes
+        )
         dfs.append(df)
     merged_df = pd.concat(dfs, ignore_index=True)
     output_path = directory / output_filename
