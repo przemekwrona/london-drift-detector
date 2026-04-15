@@ -44,8 +44,21 @@ def main():
         help="Output directory for Parquet files."
     )
 
+    # Add a 'help' subcommand to show help
+    help_parser = subparsers.add_parser(
+        'help',
+        help='Show help for a specific subcommand'
+    )
+    help_parser.add_argument(
+        'subcommand',
+        nargs='?',
+        default=None,
+        help='Subcommand to show help for (single or batch)'
+    )
+
     args = parser.parse_args()
 
+    # How to call method help for argparse command/subparser in Python:
     try:
         if args.command == 'single':
             prqt.merge_csvs_to_parquet(
@@ -57,10 +70,22 @@ def main():
                 directory=Path(args.directory),
                 output_path=Path(args.output)
             )
+        elif args.command == 'help':
+            # Show help for the specified subcommand or the main parser
+            if args.subcommand == 'single':
+                single_parser.print_help()
+            elif args.subcommand == 'batch':
+                batch_parser.print_help()
+            else:
+                parser.print_help()
+            sys.exit(0)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        print("\nExample usage:")
+        print("  poetry run python main.py single --directory ./input_csvs --output ./output/merged.parquet")
+        print("  poetry run python main.py batch --directory ./input_dirs --output ./output_dir")
         sys.exit(1)
-
+   
 
 if __name__ == '__main__':
     main()
