@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 
 
-def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parquet"):
+def merge_csvs_to_parquet(directory: Path, output_path: Path):
     """
     Merges all .csv files in a given directory into a single DataFrame and saves as a parquet file.
     When reading CSVs, explicitly sets column names and their types.
@@ -31,7 +31,7 @@ def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parque
 
     # Define column names and types
     columns = [
-        "city", "id", "route", "stop_id",
+        "city", "trip_id", "line", "stop_id",
         "curr_trip_id", "curr_stop_name", "curr_time", "curr_delay",
         "prev_trip_id", "prev_stop_name", "prev_time", "prev_delay",
         "diff", "orig_trip_id", "orig_stop_name"
@@ -40,11 +40,11 @@ def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parque
     dtypes = {
         "city": "string",
         "trip_id": "string",
-        "line": "Int64",       # pandas nullable integer
+        "line": "Int64",  # pandas nullable integer
         "stop_id": "Int64",
         "curr_trip_id": "string",
         "curr_stop_name": "string",
-        "curr_time": "string",
+        "curr_time": "string",  # We'll convert this to datetime after reading
         "curr_delay": "Int64",
         "prev_trip_id": "string",
         "prev_stop_name": "string",
@@ -64,8 +64,26 @@ def merge_csvs_to_parquet(directory: Path, output_filename: str = "merged.parque
             names=columns,
             dtype=dtypes
         )
+
+        # Convert curr_time to datetime in the specified format
+        # Ensure all 'curr_time' strings have seconds (add ':00' if missing)
+        def add_seconds_if_missing(time_str):
+            if pd.isna(time_str):
+                return time_str
+            # If the time part (after T) does not have seconds, add ':00'
+            if 'T' in time_str:
+                time_part = time_str.split('T')[1]
+                if len(time_part.split(':')) == 2:
+                    return time_str + ':00'
+            return time_str
+
+        df["curr_time"] = df["curr_time"].apply(add_seconds_if_missing)
+        df["curr_time"] = pd.to_datetime(df["curr_time"], format="%Y-%m-%dT%H:%M:%S")
+
+        df["prev_time"] = df["prev_time"].apply(add_seconds_if_missing)
+        df["prev_time"] = pd.to_datetime(df["prev_time"], format="%Y-%m-%dT%H:%M:%S")
         dfs.append(df)
+
     merged_df = pd.concat(dfs, ignore_index=True)
-    output_path = directory / output_filename
     merged_df.to_parquet(output_path, index=False)
     print(f"Merged {len(csv_files)} CSVs and saved to {output_path}")
