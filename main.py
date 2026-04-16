@@ -90,23 +90,98 @@ def merger():
 
 def plot_hist():
     import argparse
+    import sys
     from pathlib import Path
     import london_drift_detector.charts.histogram as hst
 
+    def plot_hist_single(input_path: Path, output_path: Path):
+        """
+        Plot a histogram for a single Parquet file, saving to the given output path.
+        """
+        hst.plot_numer_of_active_vehicles_histogram(
+            input_path,
+            output_path
+        )
+
+    def plot_hist_batch(input_dir: Path):
+        """
+        Plot histograms for all Parquet files in the directory.
+        """
+        hst.batch_number_of_active_vehicles(input_dir)
+
+    def plot_hist_help():
+        """
+        Print detailed usage and examples for plot-hist.
+        """
+        help_text = """
+Usage: poetry run python main.py plot-hist <subcommand> [options]
+
+Subcommands:
+  single    Plot a histogram from a single Parquet file.
+  batch     Plot histograms for all Parquet files in a directory.
+  help      Show help and usage examples.
+
+Examples:
+  # Plot for a single Parquet file and save PDF:
+  poetry run python main.py plot-hist single --input ./data/day1.parquet --output ./out/hist_day1.pdf
+
+  # Plot histograms for all Parquet files in a directory:
+  poetry run python main.py plot-hist batch --input ./parquet_results/
+"""
+        print(help_text, file=sys.stderr)
+
     parser = argparse.ArgumentParser(
-        description='Plot histogram of number of active vehicles.'
+        description='Plot histogram(s) of number of active vehicles from Parquet files.'
     )
-    parser.add_argument(
+    subparsers = parser.add_subparsers(dest='subcommand', required=True)
+
+    # Single subcommand
+    single_parser = subparsers.add_parser(
+        'single', help='Plot a histogram from a single Parquet file.'
+    )
+    single_parser.add_argument(
         '--input', '-i', required=True, type=str,
-        help='Input parquet data file'
+        help='Input Parquet file.'
     )
-    parser.add_argument(
+    single_parser.add_argument(
         '--output', '-o', required=True, type=str,
-        help='Output image file for plot (e.g., .png, .jpg)'
+        help='Output file for the plot PDF.'
     )
+
+    # Batch subcommand
+    batch_parser = subparsers.add_parser(
+        'batch', help='Plot histograms for all Parquet files in a directory.'
+    )
+    batch_parser.add_argument(
+        '--input', '-i', required=True, type=str,
+        help='Input directory containing Parquet files.'
+    )
+
+    # Help subcommand
+    help_parser = subparsers.add_parser(
+        'help', help='Show help and example calls for plot-hist.'
+    )
+
     args = parser.parse_args()
 
-    hst.plot_numer_of_active_vehicles_histogram(
-        Path(args.input),
-        Path(args.output)
-    )
+    try:
+        if args.subcommand == 'single':
+            input_path = Path(args.input)
+            output_path = Path(args.output)
+            if not input_path.is_file():
+                parser.error(f"The given --input path '{input_path}' is not a file.")
+            plot_hist_single(input_path, output_path)
+        elif args.subcommand == 'batch':
+            input_dir = Path(args.input)
+            if not input_dir.is_dir():
+                parser.error(f"The given --input path '{input_dir}' is not a directory.")
+            plot_hist_batch(input_dir)
+        elif args.subcommand == 'help':
+            plot_hist_help()
+            sys.exit(0)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        print("\nExample usage:")
+        plot_hist_help()
+        sys.exit(1)
+

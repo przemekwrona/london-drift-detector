@@ -7,12 +7,15 @@ import seaborn as sns
 def batch_number_of_active_vehicles(parquet_directory: Path):
     for subdir in parquet_directory.iterdir():
         if subdir.is_dir():
-            parquet_files = list(subdir.glob('*.parquet'))
+            parquet_files = [f for f in subdir.glob('*.parquet') if not f.name.startswith('.')]
+       
             if len(parquet_files) == 1:
                 parquet_file = parquet_files[0]
 
                 histogram_pdf_path = parquet_file.parent / "active_vehicle_histogram.pdf"
                 histogram_pdf_path = histogram_pdf_path.resolve()
+
+                print(histogram_pdf_path)
 
                 plot_numer_of_active_vehicles_histogram(parquet_file, histogram_pdf_path)
 
@@ -24,7 +27,7 @@ def number_of_active_vehicles(parquet_data: Path) -> pd.Series:
     df = df.set_index('curr_time')
 
     # Resample to 60-minute intervals, counting unique trip_ids
-    counts = df['trip_id'].resample('10min').nunique()
+    counts = df['trip_id'].resample('15min').nunique()
     counts.index = pd.to_datetime(counts.index, format='%Y-%m-%d %H:%M:%S')
 
     # Ensure counts are ordered by index (date)
@@ -33,24 +36,23 @@ def number_of_active_vehicles(parquet_data: Path) -> pd.Series:
 
 
 def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Path):
-    counts_series = number_of_active_vehicles(parquet_data) / 1.3 - 40
+    counts_series = number_of_active_vehicles(parquet_data) / 1.3 - 100
 
     # After 20:00, reduce the count proportionally (linear scaling to 0 at 23:00)
-    after_18_mask = counts_series.index.time > pd.to_datetime("18:00").time()
-    before_23_mask = counts_series.index.time <= pd.to_datetime("23:00").time()
-    mask = after_18_mask & before_23_mask
-
-    times = counts_series.index[mask]
-    if not times.empty:
-        time_minutes = times.hour * 60 + times.minute
-        minutes_at_20 = 20 * 60
-        minutes_to_23 = 23 * 60
-        scale = 1 - ((time_minutes - minutes_at_20) / (minutes_to_23 - minutes_at_20))
-        # Scale so that at 18:00 it's 1, at 23:00 it's 0
-        # Clamp scale to [0,1] to avoid negative
-        import numpy as np
-        scale = np.clip(scale, 0, 1)
-        counts_series.loc[mask] = counts_series.loc[mask] * scale
+    # after_18_mask = counts_series.index.time > pd.to_datetime("18:00").time()
+    # before_23_mask = counts_series.index.time <= pd.to_datetime("23:00").time()
+    # mask = after_18_mask & before_23_mask
+    # times = counts_series.index[mask]
+    # if not times.empty:
+    #     time_minutes = times.hour * 60 + times.minute
+    #     minutes_at_20 = 20 * 60
+    #     minutes_to_23 = 23 * 60
+    #     scale = 1 - ((time_minutes - minutes_at_20) / (minutes_to_23 - minutes_at_20))
+    #     # Scale so that at 18:00 it's 1, at 23:00 it's 0
+    #     # Clamp scale to [0,1] to avoid negative
+    #     import numpy as np
+    #     scale = np.clip(scale, 0, 1)
+    #     counts_series.loc[mask] = counts_series.loc[mask] * scale
 
     # Filter index between 03:00 and 23:00 (unchanged)
     mask = (
