@@ -22,13 +22,16 @@ def number_of_active_vehicles(parquet_data: Path) -> pd.Series:
 def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Path):
     counts_series = number_of_active_vehicles(parquet_data) / 2 - 40
 
-    # Filter index between 03:00 and 23:00
-    # The index is datetime, so we can use .index.time for filtering
-    mask = (counts_series.index.time >= pd.to_datetime("03:00").time()) & (counts_series.index.time <= pd.to_datetime("23:00").time())
+    # Filter index between 03:00 and 23:00 (unchanged)
+    mask = (
+        (counts_series.index.time >= pd.to_datetime("03:00").time()) &
+        (counts_series.index.time <= pd.to_datetime("23:00").time())
+    )
     counts_series = counts_series[mask]
 
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
+    import matplotlib.ticker as mticker
 
     plt.figure(figsize=(12, 6))
 
@@ -38,6 +41,33 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Pat
     # Format the X-axis as date in 'HH:MM'
     ax = plt.gca()
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+
+    # Set major grid every 1 hour, minor grid every 15 minutes (x axis)
+    major_locator = mdates.HourLocator(interval=1)
+    minor_locator = mdates.MinuteLocator(interval=15)
+    ax.xaxis.set_major_locator(major_locator)
+    ax.xaxis.set_minor_locator(minor_locator)
+
+    # Set y-axis major grid every 200, minor grid every 50
+    ax.yaxis.set_major_locator(mticker.MultipleLocator(200))
+    ax.yaxis.set_minor_locator(mticker.MultipleLocator(50))
+
+    # Add grid lines for y-axis as well
+    ax.grid(which='major', axis='x', linewidth=1, linestyle='-', color='gray', alpha=0.5)
+    ax.grid(which='minor', axis='x', linewidth=0.5, linestyle=':', color='gray', alpha=0.3)
+    ax.grid(which='major', axis='y', linewidth=1, linestyle='-', color='gray', alpha=0.5)
+    ax.grid(which='minor', axis='y', linewidth=0.5, linestyle=':', color='gray', alpha=0.3)
+
+    # Start x-axis at 02:00
+    from datetime import datetime, time
+
+    # Determine the minimum and maximum x-axis limits
+    start_time = time(2, 0)
+    if len(counts_series.index) > 0:
+        first_date = counts_series.index[0].date()
+        x_start = pd.Timestamp.combine(first_date, start_time)
+        x_end = counts_series.index[-1]
+        ax.set_xlim(left=x_start, right=x_end)
 
     plt.xlabel('Time (HH:MM)', fontsize=12)
     plt.ylabel('Number of Vehicles', fontsize=12)
