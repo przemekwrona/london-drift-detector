@@ -4,6 +4,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def batch_number_of_active_vehicles(parquet_directory: Path):
+    for subdir in parquet_directory.iterdir():
+        if subdir.is_dir():
+            parquet_files = list(subdir.glob('*.parquet'))
+            if len(parquet_files) == 1:
+                parquet_file = parquet_files[0]
+
+                histogram_pdf_path = parquet_file.parent / "active_vehicle_histogram.pdf"
+                histogram_pdf_path = histogram_pdf_path.resolve()
+
+                plot_numer_of_active_vehicles_histogram(parquet_file, histogram_pdf_path)
+
+
 def number_of_active_vehicles(parquet_data: Path) -> pd.Series:
     df = pd.read_parquet(parquet_data)
 
@@ -41,8 +54,8 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Pat
 
     # Filter index between 03:00 and 23:00 (unchanged)
     mask = (
-        (counts_series.index.time >= pd.to_datetime("03:00").time()) &
-        (counts_series.index.time <= pd.to_datetime("23:00").time())
+            (counts_series.index.time >= pd.to_datetime("03:00").time()) &
+            (counts_series.index.time <= pd.to_datetime("23:00").time())
     )
     counts_series = counts_series[mask]
 
@@ -75,15 +88,16 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Pat
     ax.grid(which='major', axis='y', linewidth=1, linestyle='-', color='gray', alpha=0.5)
     ax.grid(which='minor', axis='y', linewidth=0.5, linestyle=':', color='gray', alpha=0.3)
 
-    # Start x-axis at 02:00
-    from datetime import datetime, time
+    # Start x-axis at 02:00, end at 23:00
+    from datetime import time
 
     # Determine the minimum and maximum x-axis limits
     start_time = time(2, 0)
+    end_time = time(23, 0)
     if len(counts_series.index) > 0:
         first_date = counts_series.index[0].date()
         x_start = pd.Timestamp.combine(first_date, start_time)
-        x_end = counts_series.index[-1]
+        x_end = pd.Timestamp.combine(first_date, end_time)
         ax.set_xlim(left=x_start, right=x_end)
 
     plt.xlabel('Time (HH:MM)', fontsize=12)
