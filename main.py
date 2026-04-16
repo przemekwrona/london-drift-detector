@@ -85,7 +85,3 @@ def main():
         print("  poetry run python main.py single --directory ./input_csvs --output ./output/merged.parquet")
         print("  poetry run python main.py batch --directory ./input_dirs --output ./output_dir")
         sys.exit(1)
-   
-
-if __name__ == '__main__':
-    main()
