@@ -11,6 +11,8 @@ readme = "README.md"
 python = "3.11.14"
 pandas = "^3.0.2"
 pyarrow = "^23.0.1"
+matplotlib = "^3.10.8"
+seaborn = "^0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
