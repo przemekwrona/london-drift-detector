@@ -85,6 +85,7 @@ def merge_csvs_to_parquet(directory: Path, output_path: Path):
         dfs.append(df)
 
     merged_df = pd.concat(dfs, ignore_index=True)
+    merged_df = merged_df.sort_values(by="curr_time").reset_index(drop=True)
     merged_df.to_parquet(output_path, index=False)
     print(f"Merged {len(csv_files)} CSVs and saved to {output_path}")
 
