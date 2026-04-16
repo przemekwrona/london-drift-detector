@@ -20,12 +20,12 @@ def number_of_active_vehicles(parquet_data: Path) -> pd.Series:
 
 
 def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Path):
-    counts_series = number_of_active_vehicles(parquet_data) / 1.5 - 40
+    counts_series = number_of_active_vehicles(parquet_data) / 1.3 - 40
 
     # After 20:00, reduce the count proportionally (linear scaling to 0 at 23:00)
-    after_20_mask = counts_series.index.time > pd.to_datetime("18:00").time()
+    after_18_mask = counts_series.index.time > pd.to_datetime("18:00").time()
     before_23_mask = counts_series.index.time <= pd.to_datetime("23:00").time()
-    mask = after_20_mask & before_23_mask
+    mask = after_18_mask & before_23_mask
 
     times = counts_series.index[mask]
     if not times.empty:
@@ -33,7 +33,7 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Pat
         minutes_at_20 = 20 * 60
         minutes_to_23 = 23 * 60
         scale = 1 - ((time_minutes - minutes_at_20) / (minutes_to_23 - minutes_at_20))
-        # Scale so that at 20:00 it's 1, at 23:00 it's 0
+        # Scale so that at 18:00 it's 1, at 23:00 it's 0
         # Clamp scale to [0,1] to avoid negative
         import numpy as np
         scale = np.clip(scale, 0, 1)
