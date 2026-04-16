@@ -20,7 +20,7 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path):
 
     plt.figure(figsize=(12, 6))
     plt.plot(counts.index, counts.values, marker='o', linestyle='-')
-    plt.xlabel('Time')
+    # plt.xlabel('Time')
     plt.ylabel('Number of Active Vehicles')
     plt.title('Number of Active Vehicles Over Time (15-min Intervals)')
 
@@ -29,8 +29,14 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path):
     # Set major locator and formatter for every hour between 00:00 and 24:00
     ax.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0, 25), interval=1))
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    plt.xlim(counts.index.min().replace(hour=0, minute=0), 
+    # Set minor locator for every 30 minutes
+    ax.xaxis.set_minor_locator(mdates.MinuteLocator(byminute=[0, 15, 30, 45]))
+    plt.xlim(counts.index.min().replace(hour=4, minute=0),
              counts.index.max().replace(hour=23, minute=59))
+    plt.ylim(0, 200)
+    plt.grid(True, which='both', axis='both', linestyle='-', alpha=0.7)
+    # Add subgrid for every 30 minutes, lighter grid
+    plt.grid(True, which='minor', axis='x', linestyle='-', alpha=0.2)
 
     plt.tight_layout()
     plt.show()
