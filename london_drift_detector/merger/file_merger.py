@@ -40,8 +40,8 @@ def merge_csvs_to_parquet(directory: Path, output_path: Path):
     dtypes = {
         "city": "string",
         "trip_id": "string",
-        "line": "Int64",  # pandas nullable integer
-        "stop_id": "Int64",
+        "line": "string",  # pandas nullable integer
+        "stop_id": "string",
         "curr_trip_id": "string",
         "curr_stop_name": "string",
         "curr_time": "string",  # We'll convert this to datetime after reading
