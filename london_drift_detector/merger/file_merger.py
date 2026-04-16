@@ -98,6 +98,8 @@ def merge_csvs_in_directories_to_parquest(directory: Path, output_path: Path):
         if subdirectory.is_dir():
             subdirectory_name = subdirectory.name
 
-            parquet_output_path = output_path / f'{subdirectory_name}.parquet'
+            (output_path / subdirectory_name).mkdir(parents=True, exist_ok=True)
+
+            parquet_output_path = output_path / subdirectory_name / f'{subdirectory_name}.parquet'
 
             merge_csvs_to_parquet(subdirectory, parquet_output_path)
