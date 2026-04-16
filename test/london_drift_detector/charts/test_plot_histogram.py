@@ -5,7 +5,7 @@ import pandas as pd
 
 def test_load_parquet_and_plot_histogram(tmp_path):
     # given
-    parquet_path = Path(__file__).resolve().parent.parent / "results" / "2024-03-10.parquet"
+    parquet_path = Path(__file__).resolve().parent.parent / "results" / "2024-03-10" / "2024-03-10.parquet"
 
     # when
     data = hist.number_of_active_vehicles(parquet_path)
@@ -23,4 +23,5 @@ def test_batch_plot_histogram(tmp_path):
     hist.batch_number_of_active_vehicles(parquet_results)
 
     # then
-    pass
+    output_pdf = parquet_results / "2024-03-10" / "active_vehicle_histogram.pdf"
+    assert output_pdf.exists(), f"Expected histogram PDF at {output_pdf} does not exist."

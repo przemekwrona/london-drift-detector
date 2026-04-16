@@ -33,7 +33,7 @@ def test_read_csv_and_save_as_parquest_in_folder_2026_04_12(tmp_path):
 def test_read_directory_then_csv_and_save_as_parquest_in_folder(tmp_path):
     # given
     directory = Path(__file__).resolve().parent.parent / "resources"
-    output_path = Path(__file__).resolve().parent.parent / "results"
+    output_path = Path(tmp_path).resolve() / "results"
     # output_path = tmp_path / "2024_03_10.parquet"
 
     # when

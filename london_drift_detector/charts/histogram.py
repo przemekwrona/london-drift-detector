@@ -100,6 +100,8 @@ def plot_numer_of_active_vehicles_histogram(parquet_data: Path, plot_target: Pat
         x_end = pd.Timestamp.combine(first_date, end_time)
         ax.set_xlim(left=x_start, right=x_end)
 
+    ax.set_ylim(0, 1800)
+
     plt.xlabel('Time (HH:MM)', fontsize=12)
     plt.ylabel('Number of Vehicles', fontsize=12)
     plt.title('Vehicle Counts Over Time', fontsize=15)
