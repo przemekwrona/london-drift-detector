@@ -22,4 +22,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-merge-csvs = "main:main"
+merge-csvs = "main:merger"
+plot-hist = "main:plot_hist"

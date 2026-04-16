@@ -1,10 +1,7 @@
 import sys
-from pathlib import Path
-import argparse
-from london_drift_detector.merger import file_merger as prqt
 
 
-def main():
+def merger():
     """
     An example script for Poetry entry points.
 
@@ -12,6 +9,10 @@ def main():
         poetry run merge-csvs single --directory <input_dir> --output <output_file>
         poetry run merge-csvs batch --directory <parent_dir> --output <output_dir>
     """
+
+    from pathlib import Path
+    import argparse
+    from london_drift_detector.merger import file_merger as prqt
 
     parser = argparse.ArgumentParser(description="Merge CSV files into Parquet (single directory or batch mode).")
     subparsers = parser.add_subparsers(dest='command', required=True)
@@ -85,3 +86,27 @@ def main():
         print("  poetry run python main.py single --directory ./input_csvs --output ./output/merged.parquet")
         print("  poetry run python main.py batch --directory ./input_dirs --output ./output_dir")
         sys.exit(1)
+
+
+def plot_hist():
+    import argparse
+    from pathlib import Path
+    import london_drift_detector.charts.histogram as hst
+
+    parser = argparse.ArgumentParser(
+        description='Plot histogram of number of active vehicles.'
+    )
+    parser.add_argument(
+        '--input', '-i', required=True, type=str,
+        help='Input parquet data file'
+    )
+    parser.add_argument(
+        '--output', '-o', required=True, type=str,
+        help='Output image file for plot (e.g., .png, .jpg)'
+    )
+    args = parser.parse_args()
+
+    hst.plot_numer_of_active_vehicles_histogram(
+        Path(args.input),
+        Path(args.output)
+    )
