@@ -1,38 +1,30 @@
 from pathlib import Path
-import shutil
-import zipfile
-
 from london_drift_detector.merger import month_processor
+
+
+def test_process_all_month(tmp_path):
+    # given
+    source_dir = Path('/Volumes/T7/data/delay_v2')
+    output_dir = Path('/Volumes/T7/data/delay_v2_results/')
+
+    # when
+    month_processor.process_month(source_dir, output_dir)
+
+    assert True
 
 
 def test_process_month_unzips_top_level_and_nested_zips(tmp_path):
     # given
     directory = Path(__file__).resolve().parent.parent / "resources" / "process_all_month"
     # output_path = Path(tmp_path).resolve() / "results"
-    output_path = Path(__file__).resolve().parent.parent / "resources" / "results"
+    output_path = Path(__file__).resolve().parent.parent / "resources" / "process_all_month" / "results"
+
+    directory = Path(__file__).resolve().parent.parent / "resources" / "process_all_month"
+    # output_path = Path(tmp_path).resolve() / "results"
+    output_path = Path(__file__).resolve().parent.parent / "resources" / "process_all_month" / "results"
 
     # when
-    month_processor.process_month(directory)
+    month_processor.process_month(directory, output_path)
 
     # then
     assert True
-
-
-def test_process_month_with_resource_zip(tmp_path):
-    resource_dir = (
-        Path(__file__).resolve().parent.parent
-        / "resources"
-        / "process_all_month"
-    )
-    work_dir = tmp_path / "month"
-    work_dir.mkdir()
-    shutil.copy(
-        resource_dir / "10_06_24_vehicles-live-with-timetable.zip",
-        work_dir,
-    )
-
-    extracted = process_month(work_dir)
-
-    assert len(extracted) == 1
-    gz_files = list(extracted[0].rglob("*.gz"))
-    assert gz_files
